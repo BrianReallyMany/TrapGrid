@@ -18,6 +18,7 @@ public class Driver {
 	static double turnAngleStdev = 0.0;
 	static boolean useMDD = false;
 	static boolean calculateAverageEscapeProbability = false;
+	static boolean calculateOneOrMoreCapture = false;
 	static boolean outbreakLocationsProvided = false;
 	static TrapGrid tg;
 	static Outbreak fr;
@@ -28,7 +29,7 @@ public class Driver {
 			"[--step-size <step size>] [--steps-per-day <steps per day>]\n" +
 			"[--turn-angle-stdev <standard deviation for turn angles>]\n" +
 			"[-t <tolerance for TrapGrid average escape probability calculator>] " +
-			"[--calculateAvgEscProb]\n" + 
+			"[--calculateAvgEscProb]\n" + "[--calculateOneOrMoreCapture]\n" +
 			"(Type 'java -jar TrapGrid.jar --help' for more detailed info.)\n";
 
 	static String helpMessage = usageMessage + "\n" + "Parameters in [brackets] are optional.\n\n" +
@@ -112,6 +113,10 @@ public class Driver {
 			System.out.println("#...average escape probability for TrapGrid is " + escapeProb);
 		}		
 		System.out.println("##################################################################\n");
+		// Are we using TGO or TGA (@NCM)
+		if (calculateOneOrMoreCapture) {
+			System.err.println("Calculating probability of one or more capture ");
+		}
 		
 		// Print header lines to summarize parameters
 		System.out.println("######################## Parameters ##############################");
@@ -125,6 +130,12 @@ public class Driver {
 		} else {
 			System.out.println("#Diffusion coefficient: " + diffCoeff);
 		}
+		if (calculateOneOrMoreCapture) {
+			System.out.println("Escape Probability Calculation: One or more capture (TGA)");
+		}
+		else {
+			System.out.println("Escape Probability Calculation: Average capture (TGO)");
+		}
 		System.out.println("#Random seed: " + randomSeed);
 		System.out.println("##################################################################\n");
 
@@ -132,12 +143,12 @@ public class Driver {
 		if (! outbreakLocationsProvided) {
 			simRunner = 
 					new SimulationRunner(tg, numberOfDays, numberOfFlies, diffCoeff, 
-							stepSize, stepsPerDay, turnAngleStdev, useMDD, randomSeed, numberOfSimulations);
+							stepSize, stepsPerDay, turnAngleStdev, useMDD, randomSeed, numberOfSimulations, calculateOneOrMoreCapture);
 			simRunner.runSimulations();
 		} else {	
 			simRunner = 
 					new SimulationRunner(tg, outbreakFile, numberOfDays, numberOfFlies, diffCoeff, 
-							stepSize, stepsPerDay, turnAngleStdev, useMDD, randomSeed);
+							stepSize, stepsPerDay, turnAngleStdev, useMDD, randomSeed, calculateOneOrMoreCapture);
 			simRunner.runSimulations();
 		}
 		
@@ -230,6 +241,8 @@ public class Driver {
 					}
 				} else if (args[i].equals("--calculateAvgEscProb")) {
 					calculateAverageEscapeProbability = true;
+				} else if (args[i].equals("--calculateOneOrMoreCapture")){
+					calculateOneOrMoreCapture = true;
 				} else if (args[i].equals("--step-size")) {
 					try {
 						stepSize = Double.parseDouble(args[i+1]);
