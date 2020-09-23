@@ -30,7 +30,7 @@ public class Driver {
 			"[--turn-angle-stdev <standard deviation for turn angles>]\n" +
 			"[-t <tolerance for TrapGrid average escape probability calculator>] " +
 			"[--calculateAvgEscProb]\n" + "[--calculateOneOrMoreCapture]\n" +
-			"(Type 'java -jar TrapGrid.jar --help' for more detailed info.)\n";
+			"(Type 'java -jar TrapGrid.jar --help' for more detailed info or --version for version info.)\n";
 
 	static String helpMessage = usageMessage + "\n" + "Parameters in [brackets] are optional.\n\n" +
 			"TrapGrid file is a tab-separated file. The first line should give x and y values " + 
@@ -43,6 +43,8 @@ public class Driver {
 			"The default mode uses a diffusion model for insect dispersal. However, if you\n" + 
 			"provide a step size, steps per day and turn angle standard deviation, a\n" + 
 			"Mean Dispersal Distance model is used.\n\n";
+	
+	static String version = "2020-09-23";
 			
 	/**
 	 * Processes arguments and runs simulation.
@@ -106,6 +108,7 @@ public class Driver {
 		// Calculate and print TrapGrid info...
 		System.out.println("######################## TrapGrid information ####################");
 		System.out.println("#" + tg.toString());
+		System.out.println("#Version "+version);
 		if (calculateAverageEscapeProbability) {
 			System.err.println("Calculating average escape probability for TrapGrid using tolerance of " + tolerance);
 			System.err.println("This could take a while...");
@@ -179,6 +182,9 @@ public class Driver {
 			System.exit(1);
 		} else if (args.length == 1 && args[0].equals("--help")) {
 			System.out.println(helpMessage);
+			System.exit(0);
+		} else if (args.length == 1 && args[0].equals("--version")) {
+			System.out.println(version);
 			System.exit(0);
 		} else {
 			for (int i=0; i<args.length; i++) {
