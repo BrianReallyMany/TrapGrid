@@ -23,9 +23,10 @@ public class SimulationRunner {
 	boolean outbreakLocationsProvided;
 	String outbreakFile;
 	ArrayList<Outbreak> outbreaks;
+	boolean useSingleCaptureProb;
 
 	public SimulationRunner(TrapGrid tg, int numDays, int numFlies, double diffC, 
-			double stepSize, int stepsPerDay, double turnAngleStdev, boolean useMDD, long seed, int numSims) {
+			double stepSize, int stepsPerDay, double turnAngleStdev, boolean useMDD, long seed, int numSims, boolean useSingleCaptureProb) {
 		this.tg = tg;
 		this.numberOfDays = numDays;
 		this.numberOfFlies = numFlies;
@@ -38,10 +39,11 @@ public class SimulationRunner {
 		this.numberOfSimulations = numSims;
 		allResults = new ArrayList<SimulationResultsHolder>();
 		outbreakLocationsProvided = false;
+		this.useSingleCaptureProb = useSingleCaptureProb;
 	}
 	
 	public SimulationRunner(TrapGrid tg, String outbreakFile, int numDays, int numFlies, double diffCoeff,
-			double stepSize, int stepsPerDay, double turnAngleStdev, boolean useMDD, long seed) {
+			double stepSize, int stepsPerDay, double turnAngleStdev, boolean useMDD, long seed, boolean useSingleCaptureProb) {
 		this.tg = tg;
 		this.numberOfDays = numDays;
 		this.outbreakFile = outbreakFile;
@@ -54,6 +56,7 @@ public class SimulationRunner {
 		this.rng = new Random(seed);
 		allResults = new ArrayList<SimulationResultsHolder>();
 		outbreakLocationsProvided = true;
+		this.useSingleCaptureProb = useSingleCaptureProb;
 	}
 
 	Simulation createSimulation(TrapGrid t, Outbreak f) {		
@@ -74,7 +77,13 @@ public class SimulationRunner {
 				long nextLong = rng.nextLong();
 				Outbreak ob = createRandomOutbreak(tg, nextLong);
 				Simulation sim = createSimulation(tg, ob);
-				SimulationResultsHolder oneResult = sim.runSimulation();
+				SimulationResultsHolder oneResult;
+				if(useSingleCaptureProb == true) {
+					oneResult = sim.runSimulationSingleCapture();
+				}
+				else {
+					oneResult = sim.runSimulationAverageDailyCapture();
+				}
 				allResults.add(oneResult);
 			}
 		} else {
@@ -87,7 +96,13 @@ public class SimulationRunner {
 			}
 			for (Outbreak ob : this.outbreaks) {
 				Simulation sim = createSimulation(tg, ob);
-				SimulationResultsHolder oneResult = sim.runSimulation();
+				SimulationResultsHolder oneResult;
+				if(useSingleCaptureProb == true) {
+					oneResult = sim.runSimulationSingleCapture();
+				}
+				else {
+					oneResult = sim.runSimulationAverageDailyCapture();
+				}
 				allResults.add(oneResult);
 			}
 		}		

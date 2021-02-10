@@ -18,6 +18,7 @@ public class Driver {
 	static double turnAngleStdev = 0.0;
 	static boolean useMDD = false;
 	static boolean calculateAverageEscapeProbability = false;
+	static boolean calculateOneOrMoreCapture = false;
 	static boolean outbreakLocationsProvided = false;
 	static TrapGrid tg;
 	static Outbreak fr;
@@ -28,8 +29,8 @@ public class Driver {
 			"[--step-size <step size>] [--steps-per-day <steps per day>]\n" +
 			"[--turn-angle-stdev <standard deviation for turn angles>]\n" +
 			"[-t <tolerance for TrapGrid average escape probability calculator>] " +
-			"[--calculateAvgEscProb]\n" + 
-			"(Type 'java -jar TrapGrid.jar --help' for more detailed info.)\n";
+			"[--calculateAvgEscProb]\n" + "[--calculateOneOrMoreCapture]\n" +
+			"(Type 'java -jar TrapGrid.jar --help' for more detailed info or --version for version info.)\n";
 
 	static String helpMessage = usageMessage + "\n" + "Parameters in [brackets] are optional.\n\n" +
 			"TrapGrid file is a tab-separated file. The first line should give x and y values " + 
@@ -42,6 +43,8 @@ public class Driver {
 			"The default mode uses a diffusion model for insect dispersal. However, if you\n" + 
 			"provide a step size, steps per day and turn angle standard deviation, a\n" + 
 			"Mean Dispersal Distance model is used.\n\n";
+	
+	static String version = "2020-09-23";
 			
 	/**
 	 * Processes arguments and runs simulation.
@@ -105,6 +108,7 @@ public class Driver {
 		// Calculate and print TrapGrid info...
 		System.out.println("######################## TrapGrid information ####################");
 		System.out.println("#" + tg.toString());
+		System.out.println("#Version "+version);
 		if (calculateAverageEscapeProbability) {
 			System.err.println("Calculating average escape probability for TrapGrid using tolerance of " + tolerance);
 			System.err.println("This could take a while...");
@@ -112,6 +116,10 @@ public class Driver {
 			System.out.println("#...average escape probability for TrapGrid is " + escapeProb);
 		}		
 		System.out.println("##################################################################\n");
+		// Are we using TGO or TGA (@NCM)
+		if (calculateOneOrMoreCapture) {
+			System.err.println("Calculating probability of one or more capture ");
+		}
 		
 		// Print header lines to summarize parameters
 		System.out.println("######################## Parameters ##############################");
@@ -125,6 +133,12 @@ public class Driver {
 		} else {
 			System.out.println("#Diffusion coefficient: " + diffCoeff);
 		}
+		if (calculateOneOrMoreCapture) {
+			System.out.println("Escape Probability Calculation: One or more capture (TGA)");
+		}
+		else {
+			System.out.println("Escape Probability Calculation: Average capture (TGO)");
+		}
 		System.out.println("#Random seed: " + randomSeed);
 		System.out.println("##################################################################\n");
 
@@ -132,12 +146,12 @@ public class Driver {
 		if (! outbreakLocationsProvided) {
 			simRunner = 
 					new SimulationRunner(tg, numberOfDays, numberOfFlies, diffCoeff, 
-							stepSize, stepsPerDay, turnAngleStdev, useMDD, randomSeed, numberOfSimulations);
+							stepSize, stepsPerDay, turnAngleStdev, useMDD, randomSeed, numberOfSimulations, calculateOneOrMoreCapture);
 			simRunner.runSimulations();
 		} else {	
 			simRunner = 
 					new SimulationRunner(tg, outbreakFile, numberOfDays, numberOfFlies, diffCoeff, 
-							stepSize, stepsPerDay, turnAngleStdev, useMDD, randomSeed);
+							stepSize, stepsPerDay, turnAngleStdev, useMDD, randomSeed, calculateOneOrMoreCapture);
 			simRunner.runSimulations();
 		}
 		
@@ -168,6 +182,9 @@ public class Driver {
 			System.exit(1);
 		} else if (args.length == 1 && args[0].equals("--help")) {
 			System.out.println(helpMessage);
+			System.exit(0);
+		} else if (args.length == 1 && args[0].equals("--version")) {
+			System.out.println(version);
 			System.exit(0);
 		} else {
 			for (int i=0; i<args.length; i++) {
@@ -230,6 +247,8 @@ public class Driver {
 					}
 				} else if (args[i].equals("--calculateAvgEscProb")) {
 					calculateAverageEscapeProbability = true;
+				} else if (args[i].equals("--calculateOneOrMoreCapture")){
+					calculateOneOrMoreCapture = true;
 				} else if (args[i].equals("--step-size")) {
 					try {
 						stepSize = Double.parseDouble(args[i+1]);
